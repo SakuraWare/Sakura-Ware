@@ -1,6 +1,6 @@
 local Library = loadstring(game:HttpGet("https://github.com/SakuraWare/Sakura-Ware/blob/main/Libary"))()
-local ThemeManager = loadstring(game:HttpGet(repo .. "addons/ThemeManager.lua"))()
-local SaveManager = loadstring(game:HttpGet(repo .. "addons/SaveManager.lua"))()
+local ThemeManager = loadstring(game:HttpGet("https://github.com/SakuraWare/Sakura-Ware/blob/main/addons/ThemeManager"))()
+local SaveManager = loadstring(game:HttpGet("https://github.com/SakuraWare/Sakura-Ware/blob/main/addons/SaveManager"))()
 
 local Options = Library.Options
 local Toggles = Library.Toggles
