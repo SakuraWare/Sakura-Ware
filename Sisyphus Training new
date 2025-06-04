@@ -1,1 +1,345 @@
+-- Lotus Ware --
 
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/deividcomsono/Obsidian/refs/heads/main/Library.lua"))()
+
+if Library.IsMobile then
+    Library:SetDPIScale(75)
+end
+
+local Window = Library:CreateWindow({
+    Title = "Lotus Ware",
+    Footer = "Lotus x Fetanyl",
+    Icon = 71853565843493,
+    ToggleKeybind = Enum.KeyCode.LeftControl,
+    Center = true,
+    AutoShow = true,
+    ShowCustomCursor = false,
+    MobileButtonsSide = "Left"
+})
+
+-- MAIN TAB --
+local MainTab = Window:AddTab("Main", "home")
+local LeftGroupbox = MainTab:AddLeftGroupbox("Strenght")
+
+LeftGroupbox:AddToggle("AutoTrain", {
+    Text = "Auto Train",
+    Default = false,
+    Tooltip = "Fast auto train",
+    Callback = function(value)
+        _G.AutoTrain = value
+
+        task.spawn(function()
+            while _G.AutoTrain do
+                local trainEvent = game:GetService("ReplicatedStorage").Remote.Event.Train:FindFirstChild("[C-S]PlayerTryClick")
+                if trainEvent then
+                    trainEvent:FireServer(true)
+                end
+                task.wait(0.1)
+            end
+        end)
+    end
+})
+
+local RightGroupbox = MainTab:AddRightGroupbox("Energy")
+
+RightGroupbox:AddToggle("AutoEat", {
+    Text = "Auto Eat",
+    Default = false,
+    Tooltip = "Fast auto eat",
+    Callback = function(value)
+        _G.AutoEat = value
+
+        task.spawn(function()
+            while _G.AutoEat do
+                local eatEvent = game:GetService("ReplicatedStorage").Remote.Event.Food:FindFirstChild("[C-S]TryEatFood")
+                if eatEvent then
+                    eatEvent:FireServer()
+                end
+                task.wait(0.1)
+            end
+        end)
+    end
+})
+
+RightGroupbox:AddButton({
+    Text = "Auto Eat OP (Stackable)",
+    Func = function()
+        task.spawn(function()
+            while true do
+                local eatEvent = game:GetService("ReplicatedStorage").Remote.Event.Food:FindFirstChild("[C-S]TryEatFood")
+                if eatEvent then
+                    eatEvent:FireServer()
+                end
+                task.wait()
+            end
+        end)
+    end,
+    DoubleClick = false
+})
+
+local LeftGroupbox = MainTab:AddLeftGroupbox("Money/Gems")
+
+LeftGroupbox:AddToggle("AutoMoney", {
+    Text = "Auto Money",
+    Default = false,
+    Tooltip = "Fast Money gain",
+    Callback = function(value)
+        _G.AutoFight = value
+
+        task.spawn(function()
+            while _G.AutoFight do
+                for i = 1, 30 do
+                    local args = { "Fight" .. i }
+                    local remote = game:GetService("ReplicatedStorage")
+                        :WaitForChild("Remote")
+                        :WaitForChild("Event")
+                        :WaitForChild("Game")
+                        :WaitForChild("[C-S]PlayerEnd")
+
+                    if remote then
+                        remote:FireServer(unpack(args))
+                    end
+                end
+                task.wait(0.1)
+            end
+        end)
+    end
+})
+
+local TeleportGroup = MainTab:AddRightGroupbox("Worlds")
+
+local function teleportToWorld(worldId)
+    local remote = game:GetService("ReplicatedStorage")
+        :WaitForChild("Remote")
+        :WaitForChild("Event")
+        :WaitForChild("Game")
+        :WaitForChild("[C-S]PlayerChangeWorld")
+
+    if remote then
+        remote:FireServer(worldId)
+        print("Teleport to World: " .. tostring(worldId))
+    end
+end
+
+for i = 1, 5 do
+    TeleportGroup:AddButton("World " .. i, function()
+        teleportToWorld(i)
+    end)
+end
+
+TeleportGroup:AddButton("Event World", function()
+    teleportToWorld(-1)
+end)
+
+local DupeTab = Window:AddTab("Dupe Rewards", "home")
+
+-- FOREVER PACK
+local ForeverPack = DupeTab:AddLeftGroupbox("Forever Pack")
+local DupeID = 1
+_G.DupeForever = false
+
+ForeverPack:AddToggle("ToggleDupeForever", {
+    Text = "Dupe Forever Pack",
+    Default = false,
+    Callback = function(toggle)
+        _G.DupeForever = toggle
+        task.spawn(function()
+            while _G.DupeForever do
+                local success, err = pcall(function()
+                    local remote = game:GetService("ReplicatedStorage").Remote.Event.ForverPack["[C-S]TryClaimForverPack"]
+                    remote:FireServer(DupeID)
+                end)
+                if not success then warn("❌ Error:", err) end
+                task.wait(0.1)
+            end
+        end)
+    end
+})
+
+ForeverPack:AddInput("ForeverPackID", {
+    Text = "Reward ID (1-200)",
+    Default = "1",
+    OnChanged = function(value)
+        local num = tonumber(value)
+        if num and num >= 1 and num <= 200 then
+            DupeID = num
+            print("✅ Forever Pack ID set to:", DupeID)
+        else
+            warn("❌ Invalid Forever Pack ID")
+        end
+    end
+})
+
+-- EVENT PASS
+local EventPass = DupeTab:AddRightGroupbox("Event Pass")
+local EventRewardID = 1
+_G.DupeEventPass = false
+
+EventPass:AddToggle("ToggleDupeEvent", {
+    Text = "Dupe Event Pass",
+    Default = false,
+    Callback = function(toggle)
+        _G.DupeEventPass = toggle
+        task.spawn(function()
+            while _G.DupeEventPass do
+                local success, err = pcall(function()
+                    local remote = game:GetService("ReplicatedStorage").Remote.Event.EventSeason["[C-S]TryGetReward"]
+                    remote:FireServer("1", EventRewardID)
+                end)
+                if not success then warn("❌ Error:", err) end
+                task.wait(0.1)
+            end
+        end)
+    end
+})
+
+EventPass:AddInput("EventPassID", {
+    Text = "Reward ID (1-15)",
+    Default = "1",
+    OnChanged = function(value)
+        local num = tonumber(value)
+        if num and num >= 1 and num <= 15 then
+            EventRewardID = num
+            print("✅ Event Reward ID set to:", EventRewardID)
+        else
+            warn("❌ Invalid Event Reward ID")
+        end
+    end
+})
+
+EventPass:AddToggle("ToggleDupeEventPremium", {
+    Text = "Dupe Premium Event Pass",
+    Default = false,
+    Callback = function(toggle)
+        _G.DupeEventPass = toggle
+        task.spawn(function()
+            while _G.DupeEventPass do
+                local success, err = pcall(function()
+                    local remote = game:GetService("ReplicatedStorage").Remote.Event.EventSeason["[C-S]TryGetReward"]
+                    remote:FireServer("2", EventRewardID)
+                end)
+                if not success then warn("❌ Error:", err) end
+                task.wait(0.1)
+            end
+        end)
+    end
+})
+
+-- SEASON PASS
+local SeasonPass = DupeTab:AddLeftGroupbox("Season Pass")
+local SeasonRewardID = 1
+_G.DupeSeasonPass = false
+
+SeasonPass:AddToggle("ToggleDupeSeason", {
+    Text = "Dupe Season Pass",
+    Default = false,
+    Callback = function(toggle)
+        _G.DupeSeasonPass = toggle
+        task.spawn(function()
+            while _G.DupeSeasonPass do
+                local success, err = pcall(function()
+                    local remote = game:GetService("ReplicatedStorage").Remote.Event.SeasonPass["[C-S]TryGetReward"]
+                    remote:FireServer("1", SeasonRewardID)
+                end)
+                if not success then warn("❌ Error:", err) end
+                task.wait(0.1)
+            end
+        end)
+    end
+})
+
+SeasonPass:AddToggle("ToggleDupeSeasonPremium", {
+    Text = "Dupe Premium Season Pass",
+    Default = false,
+    Callback = function(toggle)
+        _G.DupeSeasonPass = toggle
+        task.spawn(function()
+            while _G.DupeSeasonPass do
+                local success, err = pcall(function()
+                    local remote = game:GetService("ReplicatedStorage").Remote.Event.SeasonPass["[C-S]TryGetReward"]
+                    remote:FireServer("2", SeasonRewardID)
+                end)
+                if not success then warn("❌ Error:", err) end
+                task.wait(0.1)
+            end
+        end)
+    end
+})
+
+SeasonPass:AddInput("SeasonRewardID", {
+    Text = "Reward ID (1-15)",
+    Default = "1",
+    OnChanged = function(value)
+        local num = tonumber(value)
+        if num and num >= 1 and num <= 15 then
+            SeasonRewardID = num
+            print("✅ Season Reward ID set to:", SeasonRewardID)
+        else
+            warn("❌ Invalid Season Reward ID")
+        end
+    end
+})
+
+-- PLAYER TAB --
+local PlayerTab = Window:AddTab("Player", "home")
+local PlayerGroupbox = PlayerTab:AddLeftGroupbox("Walk Speed")
+
+PlayerGroupbox:AddButton({
+    Text = "Reset Walk Speed",
+    Func = function()
+        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 16
+    end,
+    DoubleClick = false
+})
+
+PlayerGroupbox:AddInput("WalkSpeedInput", {
+    Text = "Walk Speed",
+    Default = "16",
+    Numeric = true,
+    Finished = true,
+    Placeholder = "Enter walk speed...",
+    Callback = function(Value)
+        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = Value
+    end
+})
+
+-- INFO TAB --
+local InfoTab = Window:AddTab("Info", "home")
+local LeftInfo = InfoTab:AddLeftGroupbox("Info")
+local RightInfo = InfoTab:AddRightGroupbox("Info")
+
+RightInfo:AddLabel("Discord: Xhynii")
+RightInfo:AddButton({
+    Text = "Copy Discord Server Link",
+    Func = function()
+        setclipboard("https://discord.gg/Z6gMjCDJrm")
+    end
+})
+
+RightInfo:AddLabel("Its Not The Best Bc I am")
+RightInfo:AddLabel("New To Creating Scripts")
+LeftInfo:AddLabel("Open/Close With Left Control")
+
+-- SETTINGS TAB --
+local SettingsTab = Window:AddTab("Setting", "home")
+local SettingsGroupbox = SettingsTab:AddLeftGroupbox("Setting")
+
+SettingsGroupbox:AddDropdown("DpiDropdown", {
+    Values = {"50", "75", "100", "125", "150"},
+    Default = 3,
+    Multi = false,
+    Text = "Change DPI",
+    Tooltip = "What DPI?",
+    Callback = function(scale)
+        Library:SetDPIScale(tonumber(scale))
+    end
+})
+
+SettingsGroupbox:AddButton({
+    Text = "Unload Menu",
+    Func = function()
+        Library:Notify("Unloading", 0.5)
+        task.wait(0.7)
+        Library:Unload()
+    end
+})
