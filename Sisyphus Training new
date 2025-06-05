@@ -9,7 +9,7 @@ end
 local Window = Library:CreateWindow({
     Title = "Lotus Ware",
     Footer = "Lotus x Fetanyl",
-    Icon = 71853565843493,
+    Icon = 102396476803448,
     ToggleKeybind = Enum.KeyCode.LeftControl,
     Center = true,
     AutoShow = true,
