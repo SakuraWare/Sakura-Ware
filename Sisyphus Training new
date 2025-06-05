@@ -117,7 +117,6 @@ WorldsGroupbox:AddButton({
     DoubleClick = false
 })
 
--- Dupe Tab --
 local DupeTab = Window:AddTab("Dupe Rewards", "package")
 
 -- Forever Pack Dupe
@@ -150,7 +149,7 @@ ForeverGroup:AddInput("DupeRewardID", {
     Default = "1",
     Numeric = true,
     Text = "Reward ID",
-    Tooltip = "1 bis 200",
+    Tooltip = "1 to 200",
     Placeholder = "1–200",
     Callback = function(val)
         local num = tonumber(val)
@@ -158,18 +157,19 @@ ForeverGroup:AddInput("DupeRewardID", {
             DupeID = num
             print("✅ ID gesetzt auf:", DupeID)
         else
-            warn("❌ Ungültige ID")
+            warn("❌ Invalid input")
         end
     end
 })
 
--- Event Pass Dupe (Free)
+-- Event Pass Dupe
 local EventGroup = DupeTab:AddRightGroupbox("Event Pass Dupe")
 local EventRewardID = 1
 _G.DupeEventRewards = false
+_G.DupePremiumEventRewards = false
 
 EventGroup:AddToggle("EventDupe", {
-    Text = "Dupe Rewards",
+    Text = "Dupe Free Pass",
     Description = "Free Event Pass",
     Default = false
 }):OnChanged(function(toggle)
@@ -189,31 +189,9 @@ EventGroup:AddToggle("EventDupe", {
     end
 end)
 
-EventGroup:AddInput("EventRewardID", {
-    Default = "1",
-    Numeric = true,
-    Text = "Reward ID",
-    Tooltip = "1 bis 15",
-    Placeholder = "1–15",
-    Callback = function(val)
-        local num = tonumber(val)
-        if num and num >= 1 and num <= 15 then
-            EventRewardID = num
-            print("✅ Event ID:", EventRewardID)
-        else
-            warn("❌ Ungültige Eingabe")
-        end
-    end
-})
-
--- Event Premium Dupe
-local EventPremiumGroup = DupeTab:AddRightGroupbox("Event Premium Dupe")
-local PremiumEventRewardID = 1
-_G.DupePremiumEventRewards = false
-
-EventPremiumGroup:AddToggle("PremiumEventDupe", {
-    Text = "Dupe Rewards",
-    Description = "Premium Pass Required",
+EventGroup:AddToggle("PremiumEventDupe", {
+    Text = "Dupe Premium Pass",
+    Description = "Premium Pass required",
     Default = false
 }):OnChanged(function(toggle)
     _G.DupePremiumEventRewards = toggle
@@ -223,7 +201,7 @@ EventPremiumGroup:AddToggle("PremiumEventDupe", {
                 pcall(function()
                     local remote = game:GetService("ReplicatedStorage").Remote.Event.EventSeason:FindFirstChild("[C-S]TryGetReward")
                     if remote then
-                        remote:FireServer("2", PremiumEventRewardID)
+                        remote:FireServer("2", EventRewardID)
                     end
                 end)
                 task.wait(0.1)
@@ -232,19 +210,19 @@ EventPremiumGroup:AddToggle("PremiumEventDupe", {
     end
 end)
 
-EventPremiumGroup:AddInput("PremiumEventRewardID", {
+EventGroup:AddInput("EventRewardID", {
     Default = "1",
     Numeric = true,
     Text = "Reward ID",
-    Tooltip = "1 bis 15",
+    Tooltip = "1 to 15",
     Placeholder = "1–15",
     Callback = function(val)
         local num = tonumber(val)
         if num and num >= 1 and num <= 15 then
-            PremiumEventRewardID = num
-            print("✅ Premium Event ID:", PremiumEventRewardID)
+            EventRewardID = num
+            print("✅ Event ID:", EventRewardID)
         else
-            warn("❌ Ungültig")
+            warn("❌ Invalid input")
         end
     end
 })
@@ -253,9 +231,10 @@ EventPremiumGroup:AddInput("PremiumEventRewardID", {
 local SeasonGroup = DupeTab:AddLeftGroupbox("Season Pass Dupe")
 local SeasonRewardID = 1
 _G.DupeSeasonRewards = false
+_G.DupePremiumSeasonRewards = false
 
 SeasonGroup:AddToggle("SeasonDupe", {
-    Text = "Dupe Rewards",
+    Text = "Dupe Free Season",
     Description = "Free Season Pass",
     Default = false
 }):OnChanged(function(toggle)
@@ -275,31 +254,9 @@ SeasonGroup:AddToggle("SeasonDupe", {
     end
 end)
 
-SeasonGroup:AddInput("SeasonRewardID", {
-    Default = "1",
-    Numeric = true,
-    Text = "Reward ID",
-    Tooltip = "1 bis 15",
-    Placeholder = "1–15",
-    Callback = function(val)
-        local num = tonumber(val)
-        if num and num >= 1 and num <= 15 then
-            SeasonRewardID = num
-            print("✅ Season ID:", SeasonRewardID)
-        else
-            warn("❌ Ungültige Eingabe")
-        end
-    end
-})
-
--- Premium Season Dupe
-local SeasonPremiumGroup = DupeTab:AddLeftGroupbox("Premium Season Dupe")
-local PremiumSeasonRewardID = 1
-_G.DupePremiumSeasonRewards = false
-
-SeasonPremiumGroup:AddToggle("PremiumSeasonDupe", {
-    Text = "Dupe Rewards",
-    Description = "Premium Pass Required",
+SeasonGroup:AddToggle("PremiumSeasonDupe", {
+    Text = "Dupe Premium Season",
+    Description = "Premium Pass required",
     Default = false
 }):OnChanged(function(toggle)
     _G.DupePremiumSeasonRewards = toggle
@@ -309,7 +266,7 @@ SeasonPremiumGroup:AddToggle("PremiumSeasonDupe", {
                 pcall(function()
                     local remote = game:GetService("ReplicatedStorage").Remote.Event.SeasonPass:FindFirstChild("[C-S]TryGetReward")
                     if remote then
-                        remote:FireServer("2", PremiumSeasonRewardID)
+                        remote:FireServer("2", SeasonRewardID)
                     end
                 end)
                 task.wait(0.1)
@@ -318,28 +275,29 @@ SeasonPremiumGroup:AddToggle("PremiumSeasonDupe", {
     end
 end)
 
-SeasonPremiumGroup:AddInput("PremiumSeasonRewardID", {
+SeasonGroup:AddInput("SeasonRewardID", {
     Default = "1",
     Numeric = true,
     Text = "Reward ID",
-    Tooltip = "1 bis 15",
+    Tooltip = "1 to 15",
     Placeholder = "1–15",
     Callback = function(val)
         local num = tonumber(val)
         if num and num >= 1 and num <= 15 then
-            PremiumSeasonRewardID = num
-            print("✅ Premium Season ID:", PremiumSeasonRewardID)
+            SeasonRewardID = num
+            print("✅ Season ID:", SeasonRewardID)
         else
-            warn("❌ Ungültige Eingabe")
+            warn("❌ Invalid input")
         end
     end
 })
 
+
 -- PLAYER TAB --
 local PlayerTab = Window:AddTab("Player", "user")
-local PlayerGroupbox = PlayerTab:AddLeftGroupbox("Walk Speed")
+local SpeedGroupbox = PlayerTab:AddLeftGroupbox("Walk Speed")
 
-PlayerGroupbox:AddButton({
+SpeedGroupbox:AddButton({
     Text = "Reset Walk Speed",
     Func = function()
         game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 16
@@ -347,7 +305,7 @@ PlayerGroupbox:AddButton({
     DoubleClick = false
 })
 
-PlayerGroupbox:AddInput("WalkSpeedInput", {
+SpeedGroupbox:AddInput("WalkSpeedInput", {
     Text = "Walk Speed",
     Default = "16",
     Numeric = true,
@@ -361,21 +319,57 @@ PlayerGroupbox:AddInput("WalkSpeedInput", {
     end
 })
 
+local JumpGroupbox = PlayerTab:AddRightGroupbox("Jump Power")
+
+JumpGroupbox:AddButton({
+    Text = "Reset Jump Power",
+    Func = function()
+        game.Players.LocalPlayer.Character.Humanoid.JumpPower = 50
+    end,
+    DoubleClick = false
+})
+
+JumpGroupbox:AddInput("JumpPowerInput", {
+    Text = "Jump Power",
+    Default = "50",
+    Numeric = true,
+    Finished = true,
+    Placeholder = "Enter jump power...",
+    Callback = function(Value)
+        local num = tonumber(Value)
+        if num then
+            game.Players.LocalPlayer.Character.Humanoid.JumpPower = num
+        end
+    end
+})
+
+local YieldGroupbox = PlayerTab:AddLeftGroupbox("Admin Commands")
+
+YieldGroupbox:AddButton({
+    Text = "Infinite Yield",
+    Description = "Universal Admin",
+    Func = function()
+        loadstring(game:HttpGet(('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'),true))()
+    end,
+    DoubleClick = false
+})
+
+
 -- INFO TAB --
 local InfoTab = Window:AddTab("Info", "info")
 local LeftInfo = InfoTab:AddLeftGroupbox("Info")
 local RightInfo = InfoTab:AddRightGroupbox("More Info")
 
-RightInfo:AddLabel("Discord: Xhynii")
+RightInfo:AddLabel("Discord: albiza.404")
 RightInfo:AddButton({
     Text = "Copy Discord Server Link",
     Func = function()
-        setclipboard("https://discord.gg/Z6gMjCDJrm")
+        setclipboard("https://discord.gg/puq3BhWpEg")
     end
 })
 
-RightInfo:AddLabel("Its Not The Best Bc I am")
-RightInfo:AddLabel("New To Creating Scripts")
+RightInfo:AddLabel("Best Sisyphus Training script rn")
+RightInfo:AddLabel("Lotus x Fenatyl")
 LeftInfo:AddLabel("Open/Close With Left Control")
 
 -- SETTINGS TAB --
