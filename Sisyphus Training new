@@ -27,7 +27,6 @@ StrengthGroupbox:AddToggle("AutoTrain", {
     Tooltip = "Fast auto train",
     Callback = function(value)
         _G.AutoTrain = value
-
         task.spawn(function()
             while _G.AutoTrain do
                 local trainEvent = game:GetService("ReplicatedStorage").Remote.Event.Train:FindFirstChild("[C-S]PlayerTryClick")
@@ -48,7 +47,6 @@ EnergyGroupbox:AddToggle("AutoEat", {
     Tooltip = "Fast auto eat",
     Callback = function(value)
         _G.AutoEat = value
-
         task.spawn(function()
             while _G.AutoEat do
                 local eatEvent = game:GetService("ReplicatedStorage").Remote.Event.Food:FindFirstChild("[C-S]TryEatFood")
@@ -85,19 +83,12 @@ MoneyGroupbox:AddToggle("AutoMoney", {
     Tooltip = "Fast Money gain",
     Callback = function(value)
         _G.AutoFight = value
-
         task.spawn(function()
             while _G.AutoFight do
                 for i = 1, 30 do
-                    local args = { "Fight" .. i }
-                    local remote = game:GetService("ReplicatedStorage")
-                        :WaitForChild("Remote")
-                        :WaitForChild("Event")
-                        :WaitForChild("Game")
-                        :WaitForChild("[C-S]PlayerEnd")
-
+                    local remote = game:GetService("ReplicatedStorage").Remote.Event.Game:FindFirstChild("[C-S]PlayerEnd")
                     if remote then
-                        remote:FireServer(unpack(args))
+                        remote:FireServer("Fight" .. i)
                     end
                 end
                 task.wait(0.1)
@@ -106,8 +97,27 @@ MoneyGroupbox:AddToggle("AutoMoney", {
     end
 })
 
--- Lotus Ware Dupe Erweiterung --
+-- Worlds --
+local WorldsGroupbox = MainTab:AddRightGroupbox("Worlds")
+for i = 1, 5 do
+    WorldsGroupbox:AddButton({
+        Text = "World " .. i,
+        Func = function()
+            game:GetService("ReplicatedStorage").Remote.Event.Game:FindFirstChild("[C-S]PlayerChangeWorld"):FireServer(i)
+        end,
+        DoubleClick = false
+    })
+end
 
+WorldsGroupbox:AddButton({
+    Text = "Event World",
+    Func = function()
+        game:GetService("ReplicatedStorage").Remote.Event.Game:FindFirstChild("[C-S]PlayerChangeWorld"):FireServer(-1)
+    end,
+    DoubleClick = false
+})
+
+-- Dupe Tab --
 local DupeTab = Window:AddTab("Dupe Rewards", "package")
 
 -- Forever Pack Dupe
@@ -124,13 +134,12 @@ ForeverGroup:AddToggle("ForeverDupe", {
     if toggle then
         task.spawn(function()
             while _G.DupeItems do
-                local success, err = pcall(function()
+                pcall(function()
                     local remote = game:GetService("ReplicatedStorage").Remote.Event:FindFirstChild("ForverPack")
                     if remote then
                         remote:FindFirstChild("[C-S]TryClaimForverPack"):FireServer(DupeID)
                     end
                 end)
-                if not success then warn("❌ Fehler beim Senden:", err) end
                 task.wait(0.1)
             end
         end)
@@ -168,13 +177,12 @@ EventGroup:AddToggle("EventDupe", {
     if toggle then
         task.spawn(function()
             while _G.DupeEventRewards do
-                local success, err = pcall(function()
+                pcall(function()
                     local remote = game:GetService("ReplicatedStorage").Remote.Event.EventSeason:FindFirstChild("[C-S]TryGetReward")
                     if remote then
                         remote:FireServer("1", EventRewardID)
                     end
                 end)
-                if not success then warn("❌ Fehler:", err) end
                 task.wait(0.1)
             end
         end)
@@ -198,7 +206,7 @@ EventGroup:AddInput("EventRewardID", {
     end
 })
 
--- Event Pass Dupe (Premium)
+-- Event Premium Dupe
 local EventPremiumGroup = DupeTab:AddRightGroupbox("Event Premium Dupe")
 local PremiumEventRewardID = 1
 _G.DupePremiumEventRewards = false
@@ -212,13 +220,12 @@ EventPremiumGroup:AddToggle("PremiumEventDupe", {
     if toggle then
         task.spawn(function()
             while _G.DupePremiumEventRewards do
-                local success, err = pcall(function()
+                pcall(function()
                     local remote = game:GetService("ReplicatedStorage").Remote.Event.EventSeason:FindFirstChild("[C-S]TryGetReward")
                     if remote then
                         remote:FireServer("2", PremiumEventRewardID)
                     end
                 end)
-                if not success then warn("❌ Fehler:", err) end
                 task.wait(0.1)
             end
         end)
@@ -242,7 +249,7 @@ EventPremiumGroup:AddInput("PremiumEventRewardID", {
     end
 })
 
--- Season Pass Dupe (Free)
+-- Season Pass Dupe
 local SeasonGroup = DupeTab:AddLeftGroupbox("Season Pass Dupe")
 local SeasonRewardID = 1
 _G.DupeSeasonRewards = false
@@ -256,13 +263,12 @@ SeasonGroup:AddToggle("SeasonDupe", {
     if toggle then
         task.spawn(function()
             while _G.DupeSeasonRewards do
-                local success, err = pcall(function()
+                pcall(function()
                     local remote = game:GetService("ReplicatedStorage").Remote.Event.SeasonPass:FindFirstChild("[C-S]TryGetReward")
                     if remote then
                         remote:FireServer("1", SeasonRewardID)
                     end
                 end)
-                if not success then warn("❌ Fehler:", err) end
                 task.wait(0.1)
             end
         end)
@@ -286,7 +292,7 @@ SeasonGroup:AddInput("SeasonRewardID", {
     end
 })
 
--- Season Pass Dupe (Premium)
+-- Premium Season Dupe
 local SeasonPremiumGroup = DupeTab:AddLeftGroupbox("Premium Season Dupe")
 local PremiumSeasonRewardID = 1
 _G.DupePremiumSeasonRewards = false
@@ -300,13 +306,12 @@ SeasonPremiumGroup:AddToggle("PremiumSeasonDupe", {
     if toggle then
         task.spawn(function()
             while _G.DupePremiumSeasonRewards do
-                local success, err = pcall(function()
+                pcall(function()
                     local remote = game:GetService("ReplicatedStorage").Remote.Event.SeasonPass:FindFirstChild("[C-S]TryGetReward")
                     if remote then
                         remote:FireServer("2", PremiumSeasonRewardID)
                     end
                 end)
-                if not success then warn("❌ Fehler:", err) end
                 task.wait(0.1)
             end
         end)
@@ -330,7 +335,6 @@ SeasonPremiumGroup:AddInput("PremiumSeasonRewardID", {
     end
 })
 
-
 -- PLAYER TAB --
 local PlayerTab = Window:AddTab("Player", "user")
 local PlayerGroupbox = PlayerTab:AddLeftGroupbox("Walk Speed")
@@ -350,7 +354,10 @@ PlayerGroupbox:AddInput("WalkSpeedInput", {
     Finished = true,
     Placeholder = "Enter walk speed...",
     Callback = function(Value)
-        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = Value
+        local num = tonumber(Value)
+        if num then
+            game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = num
+        end
     end
 })
 
