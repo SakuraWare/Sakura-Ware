@@ -177,6 +177,17 @@ fetchProducts()
 local TeleportGames = {
     {Name = "Prison Mining Simulator", PlaceId = 94886636839149},
     {Name = "Crypto RNG", PlaceId = 79000943100129},
+    {Name = "Tallest Trampoline Obby For Admin", PlaceId = 137423312687380},
+    {Name = "Glass Bridge For VIP! Squid Game Obby", PlaceId = 122878703141387},
+    {Name = "Gamer Tycoon", PlaceId = 17015673132},
+    {Name = "2 Player Labubu Tycoon", PlaceId = 15497135101},
+    {Name = "RAGE BAIT OBBY", PlaceId = 135494692865261},
+    {Name = "Jarwo Tower", PlaceId = 72390719921999},
+    {Name = "Clicker Champions", PlaceId = 17316162759},
+    {Name = "Obby But You’re On a Pig", PlaceId = 16851883045},
+    {Name = "Steal Eggs from Spiders!", PlaceId = 77914575619195},
+    {Name = "Jetpack Rush", PlaceId = 101403552776844},
+    {Name = "(190) Obby but it gets harder", PlaceId = 14815647345},
     {Name = "Slashing Simulator", PlaceId = 7728848215}
 }
 
