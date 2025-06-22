@@ -175,9 +175,8 @@ fetchProducts()
 -- TELEPORT TAB --
 
 local TeleportGames = {
-    {Name = "Brookhaven", PlaceId = 4924922222},
-    {Name = "Blox Fruits", PlaceId = 2753915549},
-    {Name = "Arsenal", PlaceId = 286090429}
+    {Name = "Prison Mining Simulator", PlaceId = 94886636839149},
+    {Name = "Crypto RNG", PlaceId = 79000943100129}
 }
 
 local selectedTeleportGame = nil
