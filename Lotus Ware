@@ -170,6 +170,36 @@ end)
 
 fetchProducts()
 
+-- TELEPORT TAB --
+
+local TeleportGames = {
+    {Name = "Brookhaven", PlaceId = 4924922222},
+    {Name = "Blox Fruits", PlaceId = 2753915549},
+    {Name = "Arsenal", PlaceId = 286090429}
+}
+
+local selectedTeleportGame = nil
+
+local GameListBox = TeleportTab:AddLeftGroupbox("Game List")
+local GameInfoBox = TeleportTab:AddRightGroupbox("Teleport")
+
+local selectedLabel = GameInfoBox:AddLabel("Selected: None")
+
+for _, game in ipairs(TeleportGames) do
+    GameListBox:AddButton(game.Name, function()
+        selectedTeleportGame = game
+        selectedLabel:SetText("Selected: " .. game.Name)
+    end)
+end
+
+GameInfoBox:AddButton("Teleport", function()
+    if selectedTeleportGame then
+        game:GetService("TeleportService"):Teleport(selectedTeleportGame.PlaceId)
+    else
+        Library:Notify("No game selected", 2)
+    end
+end)
+
 -- MISC TAB --
 local SpeedGroupbox = MiscTab:AddLeftGroupbox("Walk Speed")
 
