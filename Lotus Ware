@@ -177,7 +177,8 @@ fetchProducts()
 local TeleportGames = {
     {Name = "Prison Mining Simulator", PlaceId = 94886636839149},
     {Name = "Crypto RNG", PlaceId = 79000943100129},
-    {Name = "Anime Slashers Simulator", PlaceId = 15791156400}
+    {Name = "Anime Slashers Simulator", PlaceId = 15791156400},
+    {Name = "Slashing Simulator", PlaceId = 7728848215}
 }
 
 local selectedTeleportGame = nil
