@@ -188,6 +188,7 @@ local TeleportGames = {
     {Name = "Steal Eggs from Spiders!", PlaceId = 77914575619195},
     {Name = "Jetpack Rush", PlaceId = 101403552776844},
     {Name = "(190) Obby but it gets harder", PlaceId = 14815647345},
+    {Name = "NOT EASY OBBY", PlaceId = 17794256038},
     {Name = "Slashing Simulator", PlaceId = 7728848215}
 }
 
