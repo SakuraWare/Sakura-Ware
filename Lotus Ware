@@ -7,6 +7,8 @@ if Library.IsMobile then
 end
 
 local MarketplaceService = game:GetService("MarketplaceService")
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
 
 local success, info = pcall(function()
     return MarketplaceService:GetProductInfo(game.PlaceId)
@@ -32,13 +34,247 @@ local MiscTab = Window:AddTab("Misc", "user")
 local InfoTab = Window:AddTab("Info", "info")
 local SettingsTab = Window:AddTab("Setting", "settings")
 
--- MISC --
+-- PRODUCT SECTION --
+local ProductSection = MainTab:AddLeftGroupbox("Products")
+local StatsSection = MainTab:AddRightGroupbox("Stats")
+
+local productList = {}
+local productNames = {}
+local selectedProductId = nil
+local autoBuyEnabled = false
+local purchaseCount = 0
+
+local expensiveLabel = StatsSection:CreateLabel("expensiveLabel", "Most Expensive:\nLoading...")
+local cheapLabel = StatsSection:CreateLabel("cheapLabel", "Cheapest Product:\nLoading...")
+local purchaseLabel = StatsSection:CreateLabel("purchaseCount", "Products Purchased: 0")
+local totalProductsLabel = StatsSection:CreateLabel("totalProducts", "Total Products: 0")
+
+local function updateStats()
+    if #productList > 0 then
+        local mostExpensive = productList[1]
+        local cheapest = productList[1]
+
+        for _, product in ipairs(productList) do
+            if product.price > mostExpensive.price then
+                mostExpensive = product
+            end
+            if product.price < cheapest.price then
+                cheapest = product
+            end
+        end
+
+        expensiveLabel.ChangeText("Most Expensive:\n" .. mostExpensive.name)
+        cheapLabel.ChangeText("Cheapest Product:\n" .. cheapest.name)
+    else
+        expensiveLabel.ChangeText("Most Expensive:\nNo products found")
+        cheapLabel.ChangeText("Cheapest Product:\nNo products found")
+    end
+    purchaseLabel.ChangeText("Products Purchased: " .. purchaseCount)
+    totalProductsLabel.ChangeText("Total Products: " .. #productList)
+end
+
+local Dropdown = ProductSection:CreateDropdown("Select Product", {"Loading...."}, 1, function(selected)
+    for _, product in ipairs(productList) do
+        if product.name == selected then
+            selectedProductId = product.id
+            break
+        end
+    end
+end)
+
+local function fetchProducts()
+    productList = {}
+    productNames = {}
+
+    local pages = MarketplaceService:GetDeveloperProductsAsync()
+    for _, product in pairs(pages:GetCurrentPage()) do
+        table.insert(productList, {id = product.ProductId, name = product.Name, price = product.PriceInRobux or 0})
+        table.insert(productNames, product.Name)
+    end
+
+    Dropdown.Refresh(productNames, 1, function(selected)
+        for _, product in ipairs(productList) do
+            if product.name == selected then
+                selectedProductId = product.id
+                break
+            end
+        end
+    end)
+
+    updateStats()
+end
+
+ProductSection:CreateButton("Refresh", function()
+    fetchProducts()
+    Library:CreateNotification("Info", "Dropdown has been refreshed", 2)
+end)
+
+ProductSection:CreateButton("Buy Product", function()
+    if selectedProductId then
+        MarketplaceService:SignalPromptProductPurchaseFinished(player.UserId, selectedProductId, true)
+        purchaseCount = purchaseCount + 1
+        updateStats()
+    else
+        Library:CreateNotification("Error", "Please select something.", 3)
+    end
+end)
+
+ProductSection:CreateButton("Buy All Products", function()
+    if #productList > 0 then
+        for _, product in ipairs(productList) do
+            MarketplaceService:SignalPromptProductPurchaseFinished(player.UserId, product.id, true)
+            purchaseCount = purchaseCount + 1
+        end
+        updateStats()
+    else
+        Library:CreateNotification("Error", "I can't find any products", 3)
+    end
+end)
+
+ProductSection:CreateToggle("Auto Buy Selected", function(state)
+    autoBuyEnabled = state
+    if autoBuyEnabled then
+        while autoBuyEnabled do
+            if selectedProductId then
+                MarketplaceService:SignalPromptProductPurchaseFinished(player.UserId, selectedProductId, true)
+                purchaseCount = purchaseCount + 1
+                updateStats()
+            end
+            task.wait()
+        end
+    end
+end, "Automatically buys the selected product")
+
+ProductSection:CreateButton("Copy Selected Product ID", function()
+    if selectedProductId then
+        local success = pcall(function()
+            setclipboard(tostring(selectedProductId))
+        end)
+
+        if success then
+            Library:CreateNotification("Copied", "Product ID " .. selectedProductId .. " copied to clipboard", 3)
+        else
+            Library:CreateNotification("Error", "Executor doesn't support clipboard copy. Product ID printed to output", 3)
+            print("Product ID:", selectedProductId)
+        end
+    else
+        Library:CreateNotification("Warning", "No product selected", 2)
+    end
+end)
+
+fetchProducts()
+
+StatsSection:CreateButton("Hook Product Id", function()
+    local mt = getrawmetatable(game)
+    local oldNamecall
+
+    if not pcall(function() setreadonly(mt, false) end) then
+        Library:CreateNotification("Error", "Failed to modify metatable", 3)
+        return
+    end
+
+    oldNamecall = mt.__namecall
+
+    mt.__namecall = newcclosure(function(self, ...)
+        local args = {...}
+        local method = getnamecallmethod()
+
+        if method == "PromptProductPurchase" then
+            local productID = args[2]
+            if productID then
+                if pcall(function() setclipboard(tostring(productID)) end) then
+                    Library:CreateNotification("Product Id Hooker", tostring(productID) .. " has been copied to clipboard", 3)
+                else
+                    print("Product ID:", productID)
+                    Library:CreateNotification("Product Id Hooker", "Executor doesn't support setclipboard. Product ID " .. tostring(productID) .. " printed to output", 5)
+                end
+            end
+        end
+
+        return oldNamecall(self, ...)
+    end)
+
+    setreadonly(mt, true)
+
+    Library:CreateNotification("Hook Activated", "Hook Product ID is now active. Please click a product to hook its ID", 5)
+end)
+
+local productId = nil
+
+StatsSection:CreateTextBox("Product ID Input", 20, "Enter Product ID", function(value)
+    productId = tonumber(value)
+    if not productId then
+        Library:CreateNotification("Warning", "Please enter a valid number", 2)
+    end
+end)
+
+StatsSection:CreateButton("Add Product to Dropdown", function()
+    if not productId then
+        Library:CreateNotification("Error", "Please enter a valid Product ID (numbers only)", 3)
+        return
+    end
+
+    local productName = "Unknown Product (ID: " .. productId .. ")"
+
+    local function fetchProductInfoWithRetry(id, attempts)
+        for i = 1, attempts do
+            local success, productInfo = pcall(function()
+                return MarketplaceService:GetProductInfo(id)
+            end)
+
+            if success and productInfo and productInfo.Name then
+                return productInfo
+            end
+
+            task.wait(1.5 + math.random())
+        end
+        return nil
+    end
+
+    task.spawn(function()
+        local productInfo = fetchProductInfoWithRetry(productId, 3)
+
+        if productInfo and productInfo.Name then
+            productName = productInfo.Name
+        else
+            Library:CreateNotification("Warning", "Failed to fetch product info. Will use fallback name.", 3)
+        end
+
+        for _, product in ipairs(productList) do
+            if product.id == productId then
+                Library:CreateNotification("Info", "Product " .. productName .. " is already in the dropdown", 3)
+                return
+            end
+        end
+
+        table.insert(productList, {
+            id = productId,
+            name = productName,
+            price = (productInfo and productInfo.PriceInRobux) or 0
+        })
+        table.insert(productNames, productName)
+
+        Dropdown.Refresh(productNames, 1, function(selected)
+            for _, product in ipairs(productList) do
+                if product.name == selected then
+                    selectedProductId = product.id
+                    break
+                end
+            end
+        end)
+
+        updateStats()
+        Library:CreateNotification("Success", "Added " .. productName .. " to dropdown", 3)
+    end)
+end)
+
+-- MISC TAB --
 local SpeedGroupbox = MiscTab:AddLeftGroupbox("Walk Speed")
 
 SpeedGroupbox:AddButton({
     Text = "Reset Walk Speed",
     Func = function()
-        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 16
+        player.Character.Humanoid.WalkSpeed = 16
     end,
     DoubleClick = false
 })
@@ -52,7 +288,7 @@ SpeedGroupbox:AddInput("WalkSpeedInput", {
     Callback = function(Value)
         local num = tonumber(Value)
         if num then
-            game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = num
+            player.Character.Humanoid.WalkSpeed = num
         end
     end
 })
@@ -62,7 +298,7 @@ local JumpGroupbox = MiscTab:AddRightGroupbox("Jump Power")
 JumpGroupbox:AddButton({
     Text = "Reset Jump Power",
     Func = function()
-        game.Players.LocalPlayer.Character.Humanoid.JumpPower = 50
+        player.Character.Humanoid.JumpPower = 50
     end,
     DoubleClick = false
 })
@@ -76,7 +312,7 @@ JumpGroupbox:AddInput("JumpPowerInput", {
     Callback = function(Value)
         local num = tonumber(Value)
         if num then
-            game.Players.LocalPlayer.Character.Humanoid.JumpPower = num
+            player.Character.Humanoid.JumpPower = num
         end
     end
 })
@@ -87,13 +323,12 @@ YieldGroupbox:AddButton({
     Text = "Infinite Yield",
     Description = "Universal Admin",
     Func = function()
-        loadstring(game:HttpGet(('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'),true))()
+        loadstring(game:HttpGet(('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'), true))()
     end,
     DoubleClick = false
 })
 
-
--- INFO --
+-- INFO TAB --
 local LeftInfo = InfoTab:AddLeftGroupbox("Info")
 local RightInfo = InfoTab:AddRightGroupbox("More Info")
 
@@ -109,8 +344,7 @@ RightInfo:AddLabel("Best Universal Script")
 RightInfo:AddLabel("Lotus Ware v1.0")
 LeftInfo:AddLabel("Open/Close With Left Control")
 
--- SETTINGS --
-local SettingsTab = Window:AddTab("Setting", "settings")
+-- SETTINGS TAB --
 local SettingsGroupbox = SettingsTab:AddLeftGroupbox("Setting")
 
 SettingsGroupbox:AddDropdown("DpiDropdown", {
