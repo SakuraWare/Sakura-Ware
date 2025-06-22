@@ -35,6 +35,8 @@ local InfoTab = Window:AddTab("Info", "info")
 local SettingsTab = Window:AddTab("Setting", "settings")
 
 -- PRODUCT SECTION --
+
+
 local ProductSection = MainTab:AddLeftGroupbox("Products")
 local StatsSection = MainTab:AddRightGroupbox("Stats")
 
