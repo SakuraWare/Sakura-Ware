@@ -232,22 +232,40 @@ local ServerGroupbox = MiscTab:AddRightGroupbox("Server")
 ServerGroupbox:AddButton({
     Text = "Server Hop",
     Func = function()
-        Library:CreateNotification(
-            "Confirmation",
-            "Hop to a new server?",
-            5,
-            {"Yes", "No"},
-            {
-                function()
-                    Library:CreateNotification("Looking For a new server...", "Please wait..", 10)
-                    serverHop()
-                end,
-                nil
-            }
-        )
+        local HttpService = game:GetService("HttpService")
+        local TeleportService = game:GetService("TeleportService")
+        local PlaceId = game.PlaceId
+
+        local success, result = pcall(function()
+            return HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/" .. PlaceId .. "/servers/Public?sortOrder=Asc&limit=100")).data
+        end)
+
+        if success then
+            for _, v in pairs(result) do
+                if v.playing < v.maxPlayers and v.id ~= game.JobId then
+                    TeleportService:TeleportToPlaceInstance(PlaceId, v.id)
+                    break
+                end
+            end
+        else
+            Library:Notify("Failed to get server list", 3)
+        end
     end,
     DoubleClick = false
 })
+
+ServerGroupbox:AddButton({
+    Text = "Rejoin",
+    Func = function()
+        local TeleportService = game:GetService("TeleportService")
+        local Players = game:GetService("Players")
+        local player = Players.LocalPlayer
+
+        TeleportService:Teleport(game.PlaceId, player)
+    end,
+    DoubleClick = false
+})
+
 
 
 -- INFO TAB --
