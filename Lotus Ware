@@ -227,6 +227,29 @@ YieldGroupbox:AddButton({
     end
 })
 
+local ServerGroupbox = MiscTab:AddRightGroupbox("Server")
+
+ServerGroupbox:AddButton({
+    Text = "Server Hop",
+    Func = function()
+        Library:CreateNotification(
+            "Confirmation",
+            "Hop to a new server?",
+            5,
+            {"Yes", "No"},
+            {
+                function()
+                    Library:CreateNotification("Looking For a new server...", "Please wait..", 10)
+                    serverHop()
+                end,
+                nil
+            }
+        )
+    end,
+    DoubleClick = false
+})
+
+
 -- INFO TAB --
 local LeftInfo = InfoTab:AddLeftGroupbox("Info")
 local RightInfo = InfoTab:AddRightGroupbox("More Info")
