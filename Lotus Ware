@@ -1,453 +1,397 @@
-local UILib = loadstring(game:HttpGet('https://raw.githubusercontent.com/SakuraWare/SakuraWare-Ui/refs/heads/main/Sakura%20WareUi2'))()
-local Window = UILib.new(game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name, game.Players.LocalPlayer.Name, "Member")
+-- Lotus Ware --
 
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/deividcomsono/Obsidian/refs/heads/main/Library.lua"))()
 
--- Kategorie: Farming
-local Category1 = Window:Category("Farming", "http://www.roblox.com/asset/?id=10723407389")
-local SubButton1 = Category1:Button("Auto Farm", "http://www.roblox.com/asset/?id=10709811110")
+if Library.IsMobile then
+    Library:SetDPIScale(75)
+end
 
--- Abschnitt: Auto Train
-local SectionTrain = SubButton1:Section("Auto Train", "Left")
-SectionTrain:Toggle({
-    Title = "Auto Train",
-    Description = "Fast Muscle gain",
-    Default = false
-}, function(value)
-    _G.AutoTrain = value
+local Window = Library:CreateWindow({
+    Title = "Lotus Ware",
+    Footer = "Lotus x Fetanyl",
+    Icon = 102396476803448,
+    ToggleKeybind = Enum.KeyCode.LeftControl,
+    Center = true,
+    AutoShow = true,
+    ShowCustomCursor = false,
+    MobileButtonsSide = "Left"
+})
 
-    while _G.AutoTrain do
-        local args = {
-            [1] = true
-        }
+-- MAIN TAB --
+local MainTab = Window:AddTab("Main", "zap")
+local StrengthGroupbox = MainTab:AddLeftGroupbox("Strength")
 
-        game:GetService("ReplicatedStorage").Remote.Event.Train:FindFirstChild("[C-S]PlayerTryClick"):FireServer(unpack(args))
-        wait(0.1)
+StrengthGroupbox:AddToggle("AutoTrain", {
+    Text = "Auto Train",
+    Default = false,
+    Tooltip = "Fast auto train",
+    Callback = function(value)
+        _G.AutoTrain = value
+        task.spawn(function()
+            while _G.AutoTrain do
+                local trainEvent = game:GetService("ReplicatedStorage").Remote.Event.Train:FindFirstChild("[C-S]PlayerTryClick")
+                if trainEvent then
+                    trainEvent:FireServer(true)
+                end
+                task.wait(0.1)
+            end
+        end)
     end
-end)
+})
 
--- Abschnitt: Auto Eat
-local SectionEat = SubButton1:Section("Auto Eat", "Left")
-SectionEat:Toggle({
-    Title = "Auto Eat",
-    Description = "Fast Energy gain",
-    Default = false
-}, function(value)
-    _G.AutoEat = value
+local EnergyGroupbox = MainTab:AddRightGroupbox("Energy")
 
-    while _G.AutoEat do
-        game:GetService("ReplicatedStorage").Remote.Event.Food:FindFirstChild("[C-S]TryEatFood"):FireServer()
-        wait(0.1)
+EnergyGroupbox:AddToggle("AutoEat", {
+    Text = "Auto Eat",
+    Default = false,
+    Tooltip = "Fast auto eat",
+    Callback = function(value)
+        _G.AutoEat = value
+        task.spawn(function()
+            while _G.AutoEat do
+                local eatEvent = game:GetService("ReplicatedStorage").Remote.Event.Food:FindFirstChild("[C-S]TryEatFood")
+                if eatEvent then
+                    eatEvent:FireServer()
+                end
+                task.wait(0.1)
+            end
+        end)
     end
-end)
+})
 
--- Abschnitt: Auto Money
-local SectionMoney = SubButton1:Section("Auto Money", "Left")
-SectionMoney:Toggle({
-    Title = "Auto Money",
-    Description = "Fast Money gain",
-    Default = false
-}, function(value)
-    _G.AutoFight = value
+EnergyGroupbox:AddButton({
+    Text = "Auto Eat OP (Stackable)",
+    Func = function()
+        task.spawn(function()
+            while true do
+                local eatEvent = game:GetService("ReplicatedStorage").Remote.Event.Food:FindFirstChild("[C-S]TryEatFood")
+                if eatEvent then
+                    eatEvent:FireServer()
+                end
+                task.wait()
+            end
+        end)
+    end,
+    DoubleClick = false
+})
 
-    while _G.AutoFight do
-        for i = 1, 30 do
-            local args = { "Fight" .. i }
-            game:GetService("ReplicatedStorage"):WaitForChild("Remote"):WaitForChild("Event"):WaitForChild("Game"):WaitForChild("[C-S]PlayerEnd"):FireServer(unpack(args))
-        end
-        wait(0.1)
+local MoneyGroupbox = MainTab:AddLeftGroupbox("Money/Gems")
+
+MoneyGroupbox:AddToggle("AutoMoney", {
+    Text = "Auto Money",
+    Default = false,
+    Tooltip = "Fast Money gain",
+    Callback = function(value)
+        _G.AutoFight = value
+        task.spawn(function()
+            while _G.AutoFight do
+                for i = 1, 30 do
+                    local remote = game:GetService("ReplicatedStorage").Remote.Event.Game:FindFirstChild("[C-S]PlayerEnd")
+                    if remote then
+                        remote:FireServer("Fight" .. i)
+                    end
+                end
+                task.wait(0.1)
+            end
+        end)
     end
-end)
+})
 
-local SubButton2 = Category1:Button("Worlds", "http://www.roblox.com/asset/?id=10723404337")
-local Section1 = SubButton2:Section("Worlds", "Left")
+-- Worlds --
+local WorldsGroupbox = MainTab:AddRightGroupbox("Worlds")
+for i = 1, 5 do
+    WorldsGroupbox:AddButton({
+        Text = "World " .. i,
+        Func = function()
+            game:GetService("ReplicatedStorage").Remote.Event.Game:FindFirstChild("[C-S]PlayerChangeWorld"):FireServer(i)
+        end,
+        DoubleClick = false
+    })
+end
 
-Section1:Button({
-    Title = "World 1",
-    ButtonName = "Teleport",
-    Description = "Teleport to World 1",
-}, function()
-    game:GetService("ReplicatedStorage")
-        :WaitForChild("Remote")
-        :WaitForChild("Event")
-        :WaitForChild("Game")
-        :WaitForChild("[C-S]PlayerChangeWorld")
-        :FireServer(1)
-end)
+WorldsGroupbox:AddButton({
+    Text = "Event World",
+    Func = function()
+        game:GetService("ReplicatedStorage").Remote.Event.Game:FindFirstChild("[C-S]PlayerChangeWorld"):FireServer(-1)
+    end,
+    DoubleClick = false
+})
 
-Section1:Button({
-    Title = "World 2",
-    ButtonName = "Teleport",
-    Description = "Teleport to World 2",
-}, function()
-    game:GetService("ReplicatedStorage")
-        :WaitForChild("Remote")
-        :WaitForChild("Event")
-        :WaitForChild("Game")
-        :WaitForChild("[C-S]PlayerChangeWorld")
-        :FireServer(2)
-end)
+local DupeTab = Window:AddTab("Dupe Rewards", "package")
 
-Section1:Button({
-    Title = "World 3",
-    ButtonName = "Teleport",
-    Description = "Teleport to World 3",
-}, function()
-    game:GetService("ReplicatedStorage")
-        :WaitForChild("Remote")
-        :WaitForChild("Event")
-        :WaitForChild("Game")
-        :WaitForChild("[C-S]PlayerChangeWorld")
-        :FireServer(3)
-end)
-
-Section1:Button({
-    Title = "World 4",
-    ButtonName = "Teleport",
-    Description = "Teleport to World 4",
-}, function()
-    game:GetService("ReplicatedStorage")
-        :WaitForChild("Remote")
-        :WaitForChild("Event")
-        :WaitForChild("Game")
-        :WaitForChild("[C-S]PlayerChangeWorld")
-        :FireServer(4)
-end)
-
-Section1:Button({
-    Title = "World 5",
-    ButtonName = "Teleport",
-    Description = "Teleport to World 5",
-}, function()
-    game:GetService("ReplicatedStorage")
-        :WaitForChild("Remote")
-        :WaitForChild("Event")
-        :WaitForChild("Game")
-        :WaitForChild("[C-S]PlayerChangeWorld")
-        :FireServer(5)
-end)
-
-local Section2 = SubButton2:Section("Event", "Left")
-Section2:Button({
-    Title = "Event World",
-    ButtonName = "Teleport",
-    Description = "Teleport to Event",
-}, function()
-    game:GetService("ReplicatedStorage")
-        :WaitForChild("Remote")
-        :WaitForChild("Event")
-        :WaitForChild("Game")
-        :WaitForChild("[C-S]PlayerChangeWorld")
-        :FireServer(-1)
-end)
-
--- Kategorie: Dupe Rewards
-local Category2 = Window:Category("Dupe Rewards", "http://www.roblox.com/asset/?id=10734909540")
-
-local SubButtonDupe1 = Category2:Button("Dupe Forever Pack", "http://www.roblox.com/asset/?id=10723415766")
-local SubButtonDupe2 = Category2:Button("Dupe Event Pass", "http://www.roblox.com/asset/?id=8395747586")
-local SubButtonDupe3 = Category2:Button("Dupe Season Pass", "http://www.roblox.com/asset/?id=10723434711")
-
-
-local Section1 = SubButtonDupe1:Section("Forever Pack Dupe", "Left")
+-- Forever Pack Dupe
+local ForeverGroup = DupeTab:AddLeftGroupbox("Forever Pack Dupe")
 local DupeID = 1
-local _G = _G or {}
 _G.DupeItems = false
 
-Section1:Toggle({
-    Title = "Dupe Rewards",
+ForeverGroup:AddToggle("ForeverDupe", {
+    Text = "Dupe Rewards",
     Description = "Dupe Forever Pack",
     Default = false
-}, function(toggle)
+}):OnChanged(function(toggle)
     _G.DupeItems = toggle
-
     if toggle then
-        spawn(function()
+        task.spawn(function()
             while _G.DupeItems do
-                local success, err = pcall(function()
-                    local remote = game:GetService("ReplicatedStorage")
-                        :WaitForChild("Remote")
-                        :WaitForChild("Event")
-                        :WaitForChild("ForverPack") -- ← überprüfe: eventuell Tippfehler
-                        :WaitForChild("[C-S]TryClaimForverPack")
-
-                    remote:FireServer(DupeID)
+                pcall(function()
+                    local remote = game:GetService("ReplicatedStorage").Remote.Event:FindFirstChild("ForverPack")
+                    if remote then
+                        remote:FindFirstChild("[C-S]TryClaimForverPack"):FireServer(DupeID)
+                    end
                 end)
-
-                if not success then
-                    warn("❌ Error:", err)
-                end
-
-                wait(0.1)
+                task.wait(0.1)
             end
         end)
     end
 end)
 
-Section1:Textbox({
-    Title = "Reward ID",
-    Description = "Number from 1 to 200",
+ForeverGroup:AddInput("DupeRewardID", {
     Default = "1",
-}, function(value)
-    local num = tonumber(value)
-    if num and num >= 1 and num <= 200 then
-        DupeID = num
-        print("✅ Item ID set to:", DupeID)
-    else
-        warn("❌ Invalid input! Please enter a number from 1 to 200.")
+    Numeric = true,
+    Text = "Reward ID",
+    Tooltip = "1 to 200",
+    Placeholder = "1–200",
+    Callback = function(val)
+        local num = tonumber(val)
+        if num and num >= 1 and num <= 200 then
+            DupeID = num
+            print("✅ ID gesetzt auf:", DupeID)
+        else
+            warn("❌ Invalid input")
+        end
     end
-end)
+})
 
-local Section2 = SubButtonDupe2:Section("Event Reward Dupe", "Left")
+-- Event Pass Dupe
+local EventGroup = DupeTab:AddRightGroupbox("Event Pass Dupe")
 local EventRewardID = 1
-local _G = _G or {}
 _G.DupeEventRewards = false
+_G.DupePremiumEventRewards = false
 
-Section2:Toggle({
-    Title = "Dupe Rewards",
-    Description = "Dupe Event Pass",
+EventGroup:AddToggle("EventDupe", {
+    Text = "Dupe Free Pass",
+    Description = "Free Event Pass",
     Default = false
-}, function(toggle)
+}):OnChanged(function(toggle)
     _G.DupeEventRewards = toggle
-
     if toggle then
-        spawn(function()
+        task.spawn(function()
             while _G.DupeEventRewards do
-                local success, err = pcall(function()
-                    local remote = game:GetService("ReplicatedStorage")
-                        :WaitForChild("Remote")
-                        :WaitForChild("Event")
-                        :WaitForChild("EventSeason")
-                        :WaitForChild("[C-S]TryGetReward")
-
-                    local args = {
-                        [1] = "1",               -- feste ID
-                        [2] = EventRewardID      -- variable ID
-                    }
-
-                    remote:FireServer(unpack(args))
+                pcall(function()
+                    local remote = game:GetService("ReplicatedStorage").Remote.Event.EventSeason:FindFirstChild("[C-S]TryGetReward")
+                    if remote then
+                        remote:FireServer("1", EventRewardID)
+                    end
                 end)
-
-                if not success then
-                    warn("❌ Error:", err)
-                end
-
-                wait(0.1)
+                task.wait(0.1)
             end
         end)
     end
 end)
 
-Section2:Textbox({
-    Title = "Reward ID",
-    Description = "Number from 1 to 15",
-    Default = "1",
-}, function(value)
-    local num = tonumber(value)
-    if num and num >= 1 and num <= 15 then
-        EventRewardID = num
-        print("✅ Event Reward ID set to:", EventRewardID)
-    else
-        warn("❌ Invalid input! Please enter a number from 1 to 15.")
-    end
-end)
-
-local Section2 = SubButtonDupe2:Section("Event Premium Dupe", "Left")
-local EventRewardID = 1
-local _G = _G or {}
-_G.DupeEventRewards = false
-
-Section2:Toggle({
-    Title = "Dupe Rewards",
+EventGroup:AddToggle("PremiumEventDupe", {
+    Text = "Dupe Premium Pass",
     Description = "Premium Pass required",
     Default = false
-}, function(toggle)
-    _G.DupeEventRewards = toggle
-
+}):OnChanged(function(toggle)
+    _G.DupePremiumEventRewards = toggle
     if toggle then
-        spawn(function()
-            while _G.DupeEventRewards do
-                local success, err = pcall(function()
-                    local remote = game:GetService("ReplicatedStorage")
-                        :WaitForChild("Remote")
-                        :WaitForChild("Event")
-                        :WaitForChild("EventSeason")
-                        :WaitForChild("[C-S]TryGetReward")
-
-                    local args = {
-                        [1] = "2",               -- feste ID
-                        [2] = EventRewardID      -- variable ID
-                    }
-
-                    remote:FireServer(unpack(args))
+        task.spawn(function()
+            while _G.DupePremiumEventRewards do
+                pcall(function()
+                    local remote = game:GetService("ReplicatedStorage").Remote.Event.EventSeason:FindFirstChild("[C-S]TryGetReward")
+                    if remote then
+                        remote:FireServer("2", EventRewardID)
+                    end
                 end)
-
-                if not success then
-                    warn("❌ Error:", err)
-                end
-
-                wait(0.1)
+                task.wait(0.1)
             end
         end)
     end
 end)
 
-Section2:Textbox({
-    Title = "Reward ID",
-    Description = "Number from 1 to 15",
+EventGroup:AddInput("EventRewardID", {
     Default = "1",
-}, function(value)
-    local num = tonumber(value)
-    if num and num >= 1 and num <= 15 then
-        EventRewardID = num
-        print("✅ Event Reward ID set to:", EventRewardID)
-    else
-        warn("❌ Invalid input! Please enter a number from 1 to 15.")
+    Numeric = true,
+    Text = "Reward ID",
+    Tooltip = "1 to 15",
+    Placeholder = "1–15",
+    Callback = function(val)
+        local num = tonumber(val)
+        if num and num >= 1 and num <= 15 then
+            EventRewardID = num
+            print("✅ Event ID:", EventRewardID)
+        else
+            warn("❌ Invalid input")
+        end
     end
-end)
+})
 
-local Section3 = SubButtonDupe3:Section("Season Pass Dupe", "Left")
+-- Season Pass Dupe
+local SeasonGroup = DupeTab:AddLeftGroupbox("Season Pass Dupe")
 local SeasonRewardID = 1
-local _G = _G or {}
 _G.DupeSeasonRewards = false
+_G.DupePremiumSeasonRewards = false
 
-Section3:Toggle({
-    Title = "Dupe Rewards",
-    Description = "Dupe Season Pass Belohnung",
+SeasonGroup:AddToggle("SeasonDupe", {
+    Text = "Dupe Free Season",
+    Description = "Free Season Pass",
     Default = false
-}, function(toggle)
+}):OnChanged(function(toggle)
     _G.DupeSeasonRewards = toggle
-
     if toggle then
-        spawn(function()
+        task.spawn(function()
             while _G.DupeSeasonRewards do
-                local success, err = pcall(function()
-                    local remote = game:GetService("ReplicatedStorage")
-                        :WaitForChild("Remote")
-                        :WaitForChild("Event")
-                        :WaitForChild("SeasonPass")
-                        :WaitForChild("[C-S]TryGetReward")
-
-                    local args = {
-                        [1] = "1",                 -- fest
-                        [2] = SeasonRewardID       -- von Textbox einstellbar
-                    }
-
-                    remote:FireServer(unpack(args))
+                pcall(function()
+                    local remote = game:GetService("ReplicatedStorage").Remote.Event.SeasonPass:FindFirstChild("[C-S]TryGetReward")
+                    if remote then
+                        remote:FireServer("1", SeasonRewardID)
+                    end
                 end)
-
-                if not success then
-                    warn("❌ Error:", err)
-                end
-
-                wait(0.1)
+                task.wait(0.1)
             end
         end)
     end
 end)
 
-Section3:Textbox({
-    Title = "Reward ID",
-    Description = "Number from 1 to 15",
-    Default = "1",
-}, function(value)
-    local num = tonumber(value)
-    if num and num >= 1 and num <= 15 then
-        SeasonRewardID = num
-        print("✅ Season Reward ID set to:", SeasonRewardID)
-    else
-        warn("❌ Invalid input! Please enter a number from 1 to 15.")
-    end
-end)
-
-local Section3 = SubButtonDupe3:Section("Premium Pass Dupe", "Left")
-local SeasonRewardID = 1
-local _G = _G or {}
-_G.DupeSeasonRewards = false
-
-Section3:Toggle({
-    Title = "Dupe Rewards",
+SeasonGroup:AddToggle("PremiumSeasonDupe", {
+    Text = "Dupe Premium Season",
     Description = "Premium Pass required",
     Default = false
-}, function(toggle)
-    _G.DupeSeasonRewards = toggle
-
+}):OnChanged(function(toggle)
+    _G.DupePremiumSeasonRewards = toggle
     if toggle then
-        spawn(function()
-            while _G.DupeSeasonRewards do
-                local success, err = pcall(function()
-                    local remote = game:GetService("ReplicatedStorage")
-                        :WaitForChild("Remote")
-                        :WaitForChild("Event")
-                        :WaitForChild("SeasonPass")
-                        :WaitForChild("[C-S]TryGetReward")
-
-                    local args = {
-                        [1] = "2",                 -- fest
-                        [2] = SeasonRewardID       -- von Textbox einstellbar
-                    }
-
-                    remote:FireServer(unpack(args))
+        task.spawn(function()
+            while _G.DupePremiumSeasonRewards do
+                pcall(function()
+                    local remote = game:GetService("ReplicatedStorage").Remote.Event.SeasonPass:FindFirstChild("[C-S]TryGetReward")
+                    if remote then
+                        remote:FireServer("2", SeasonRewardID)
+                    end
                 end)
-
-                if not success then
-                    warn("❌ Error:", err)
-                end
-
-                wait(0.1)
+                task.wait(0.1)
             end
         end)
     end
 end)
 
-Section3:Textbox({
-    Title = "Reward ID",
-    Description = "Number from 1 to 15",
+SeasonGroup:AddInput("SeasonRewardID", {
     Default = "1",
-}, function(value)
-    local num = tonumber(value)
-    if num and num >= 1 and num <= 15 then
-        SeasonRewardID = num
-        print("✅ Season Reward ID set to:", SeasonRewardID)
-    else
-        warn("❌ Invalid input! Please enter a number from 1 to 15.")
+    Numeric = true,
+    Text = "Reward ID",
+    Tooltip = "1 to 15",
+    Placeholder = "1–15",
+    Callback = function(val)
+        local num = tonumber(val)
+        if num and num >= 1 and num <= 15 then
+            SeasonRewardID = num
+            print("✅ Season ID:", SeasonRewardID)
+        else
+            warn("❌ Invalid input")
+        end
     end
-end)
+})
 
-local Category3 = Window:Category("Settings", "http://www.roblox.com/asset/?id=10734950309")
-local SubButton1 = Category3:Button("Player Settings", "http://www.roblox.com/asset/?id=8395621517")
-local Section1 = SubButton1:Section("Player Settings", "Left")
 
-Section1:Slider({
-    Title = "Walkspeed",
-    Description = "Change your Walkspeed",
-    Default = 16,
-    Min = 16,
-    Max = 120
-}, function(value)
-    local player = game.Players.LocalPlayer
-    if player and player.Character and player.Character:FindFirstChild("Humanoid") then
-        player.Character.Humanoid.WalkSpeed = value
+-- PLAYER TAB --
+local PlayerTab = Window:AddTab("Player", "user")
+local SpeedGroupbox = PlayerTab:AddLeftGroupbox("Walk Speed")
+
+SpeedGroupbox:AddButton({
+    Text = "Reset Walk Speed",
+    Func = function()
+        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 16
+    end,
+    DoubleClick = false
+})
+
+SpeedGroupbox:AddInput("WalkSpeedInput", {
+    Text = "Walk Speed",
+    Default = "16",
+    Numeric = true,
+    Finished = true,
+    Placeholder = "Enter walk speed...",
+    Callback = function(Value)
+        local num = tonumber(Value)
+        if num then
+            game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = num
+        end
     end
-end)
+})
 
-Section1:Slider({
-    Title = "JumpPower",
-    Description = "Change your JumpPower",
-    Default = 50,
-    Min = 50,
-    Max = 300
-}, function(value)
-    local player = game.Players.LocalPlayer
-    if player and player.Character and player.Character:FindFirstChild("Humanoid") then
-        player.Character.Humanoid.JumpPower = value
+local JumpGroupbox = PlayerTab:AddRightGroupbox("Jump Power")
+
+JumpGroupbox:AddButton({
+    Text = "Reset Jump Power",
+    Func = function()
+        game.Players.LocalPlayer.Character.Humanoid.JumpPower = 50
+    end,
+    DoubleClick = false
+})
+
+JumpGroupbox:AddInput("JumpPowerInput", {
+    Text = "Jump Power",
+    Default = "50",
+    Numeric = true,
+    Finished = true,
+    Placeholder = "Enter jump power...",
+    Callback = function(Value)
+        local num = tonumber(Value)
+        if num then
+            game.Players.LocalPlayer.Character.Humanoid.JumpPower = num
+        end
     end
-end)
+})
 
-local Section2 = SubButton1:Section("Infinite Yield", "Left")
+local YieldGroupbox = PlayerTab:AddLeftGroupbox("Admin Commands")
 
-Section2:Button({
-    ButtonName = "Infinite Yield",
+YieldGroupbox:AddButton({
+    Text = "Infinite Yield",
     Description = "Universal Admin",
-    }, function(value)
-    loadstring(game:HttpGet(('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'),true))()
-end)
+    Func = function()
+        loadstring(game:HttpGet(('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'),true))()
+    end,
+    DoubleClick = false
+})
+
+
+-- INFO TAB --
+local InfoTab = Window:AddTab("Info", "info")
+local LeftInfo = InfoTab:AddLeftGroupbox("Info")
+local RightInfo = InfoTab:AddRightGroupbox("More Info")
+
+RightInfo:AddLabel("Discord: albiza.404")
+RightInfo:AddButton({
+    Text = "Copy Discord Server Link",
+    Func = function()
+        setclipboard("https://discord.gg/puq3BhWpEg")
+    end
+})
+
+RightInfo:AddLabel("Best Sisyphus Training script rn")
+RightInfo:AddLabel("Lotus x Fenatyl")
+LeftInfo:AddLabel("Open/Close With Left Control")
+
+-- SETTINGS TAB --
+local SettingsTab = Window:AddTab("Setting", "settings")
+local SettingsGroupbox = SettingsTab:AddLeftGroupbox("Setting")
+
+SettingsGroupbox:AddDropdown("DpiDropdown", {
+    Values = {"50", "75", "100", "125", "150"},
+    Default = 3,
+    Multi = false,
+    Text = "Change DPI",
+    Tooltip = "What DPI?",
+    Callback = function(scale)
+        Library:SetDPIScale(tonumber(scale))
+    end
+})
+
+SettingsGroupbox:AddButton({
+    Text = "Unload Menu",
+    Func = function()
+        Library:Notify("Unloading", 0.5)
+        task.wait(0.7)
+        Library:Unload()
+    end
+})
