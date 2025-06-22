@@ -63,8 +63,8 @@ local function updateStats()
             end
         end
 
-        expensiveLabel:SetText("Most Expensive:\n" .. mostExpensive.name)
-        cheapLabel:SetText("Cheapest Product:\n" .. cheapest.name)
+        expensiveLabel:SetText("Most Expensive:\n" .. mostExpensive.name .. " (" .. mostExpensive.price .. " R$)")
+        cheapLabel:SetText("Cheapest Product:\n" .. cheapest.name .. " (" .. cheapest.price .. " R$)")
     else
         expensiveLabel:SetText("Most Expensive:\nNo products found")
         cheapLabel:SetText("Cheapest Product:\nNo products found")
@@ -94,8 +94,11 @@ local function fetchProducts()
 
     local pages = MarketplaceService:GetDeveloperProductsAsync()
     for _, product in pairs(pages:GetCurrentPage()) do
-        table.insert(productList, {id = product.ProductId, name = product.Name, price = product.PriceInRobux or 0})
-        table.insert(productNames, product.Name)
+        local price = product.PriceInRobux
+        if price ~= nil then
+            table.insert(productList, {id = product.ProductId, name = product.Name, price = price})
+            table.insert(productNames, product.Name)
+        end
     end
 
     Dropdown:SetValues(productNames)
@@ -129,21 +132,25 @@ ProductSection:AddButton("Buy All Products", function()
     end
 end)
 
-ProductSection:AddToggle("Auto Buy Selected", {Text = "Auto Buy Selected", Default = false, Callback = function(state)
-    autoBuyEnabled = state
-    if autoBuyEnabled then
-        task.spawn(function()
-            while autoBuyEnabled do
-                if selectedProductId then
-                    MarketplaceService:SignalPromptProductPurchaseFinished(player.UserId, selectedProductId, true)
-                    purchaseCount = purchaseCount + 1
-                    updateStats()
+ProductSection:AddToggle("Auto Buy Selected", {
+    Text = "Auto Buy Selected",
+    Default = false,
+    Callback = function(state)
+        autoBuyEnabled = state
+        if autoBuyEnabled then
+            task.spawn(function()
+                while autoBuyEnabled do
+                    if selectedProductId then
+                        MarketplaceService:SignalPromptProductPurchaseFinished(player.UserId, selectedProductId, true)
+                        purchaseCount = purchaseCount + 1
+                        updateStats()
+                    end
+                    task.wait(1)
                 end
-                task.wait(1)
-            end
-        end)
+            end)
+        end
     end
-end})
+})
 
 ProductSection:AddButton("Copy Selected Product ID", function()
     if selectedProductId then
@@ -162,3 +169,99 @@ ProductSection:AddButton("Copy Selected Product ID", function()
 end)
 
 fetchProducts()
+
+-- MISC TAB --
+local SpeedGroupbox = MiscTab:AddLeftGroupbox("Walk Speed")
+
+SpeedGroupbox:AddButton({
+    Text = "Reset Walk Speed",
+    Func = function()
+        player.Character.Humanoid.WalkSpeed = 16
+    end
+})
+
+SpeedGroupbox:AddInput("WalkSpeedInput", {
+    Text = "Walk Speed",
+    Default = "16",
+    Numeric = true,
+    Finished = true,
+    Placeholder = "Enter walk speed...",
+    Callback = function(Value)
+        local num = tonumber(Value)
+        if num then
+            player.Character.Humanoid.WalkSpeed = num
+        end
+    end
+})
+
+local JumpGroupbox = MiscTab:AddRightGroupbox("Jump Power")
+
+JumpGroupbox:AddButton({
+    Text = "Reset Jump Power",
+    Func = function()
+        player.Character.Humanoid.JumpPower = 50
+    end
+})
+
+JumpGroupbox:AddInput("JumpPowerInput", {
+    Text = "Jump Power",
+    Default = "50",
+    Numeric = true,
+    Finished = true,
+    Placeholder = "Enter jump power...",
+    Callback = function(Value)
+        local num = tonumber(Value)
+        if num then
+            player.Character.Humanoid.JumpPower = num
+        end
+    end
+})
+
+local YieldGroupbox = MiscTab:AddLeftGroupbox("Admin Commands")
+
+YieldGroupbox:AddButton({
+    Text = "Infinite Yield",
+    Description = "Universal Admin",
+    Func = function()
+        loadstring(game:HttpGet(('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'), true))()
+    end
+})
+
+-- INFO TAB --
+local LeftInfo = InfoTab:AddLeftGroupbox("Info")
+local RightInfo = InfoTab:AddRightGroupbox("More Info")
+
+RightInfo:AddLabel("Discord: aufgebraucht")
+RightInfo:AddButton({
+    Text = "Copy Discord Server Link",
+    Func = function()
+        setclipboard("https://discord.gg/FenatylHub")
+    end
+})
+
+RightInfo:AddLabel("Best Universal Script")
+RightInfo:AddLabel("Lotus Ware v1.0")
+LeftInfo:AddLabel("Open/Close With Left Control")
+
+-- SETTINGS TAB --
+local SettingsGroupbox = SettingsTab:AddLeftGroupbox("Setting")
+
+SettingsGroupbox:AddDropdown("DpiDropdown", {
+    Values = {"50", "75", "100", "125", "150"},
+    Default = 3,
+    Multi = false,
+    Text = "Change DPI",
+    Tooltip = "What DPI?",
+    Callback = function(scale)
+        Library:SetDPIScale(tonumber(scale))
+    end
+})
+
+SettingsGroupbox:AddButton({
+    Text = "Unload Menu",
+    Func = function()
+        Library:Notify("Unloading", 0.5)
+        task.wait(0.7)
+        Library:Unload()
+    end
+})
